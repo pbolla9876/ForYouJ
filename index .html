@@ -533,8 +533,9 @@
           start: YT_START_SECONDS
         },
         events: {
-          onReady: () => {
+          onReady: (e) => {
             ytReady = true;
+            e.target.seekTo(YT_START_SECONDS, true);
             if (wantsToStart) tryStartMusic();
           },
           onStateChange: (e) => {
@@ -544,6 +545,18 @@
               ytPlayer.seekTo(YT_START_SECONDS, true);
               ytPlayer.playVideo();
             }
+          },
+          onError: (e) => {
+            const meanings = {
+              2: 'Invalid video ID.',
+              5: 'Cannot be played in the HTML5 player.',
+              100: 'Video not found (removed or private).',
+              101: 'Owner has disabled embedding on other sites.',
+              150: 'Owner has disabled embedding on other sites.'
+            };
+            console.error('YouTube player error', e.data, meanings[e.data] || 'Unknown error');
+            muteBtn.textContent = '⚠ MUSIC UNAVAILABLE';
+            muteBtn.title = meanings[e.data] || 'Unknown playback error';
           }
         }
       });
@@ -553,6 +566,7 @@
       wantsToStart = true;
       if (musicStarted || !ytReady || !ytPlayer) return;
       musicStarted = true;
+      ytPlayer.seekTo(YT_START_SECONDS, true);
       ytPlayer.setVolume(0);
       ytPlayer.playVideo();
 
