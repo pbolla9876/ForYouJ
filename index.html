@@ -58,6 +58,17 @@
       pointer-events: none;
     }
 
+    .vignette {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(5,4,10,0.75) 100%);
+    }
+
     .scene-container {
       position: relative;
       z-index: 10;
@@ -82,7 +93,26 @@
       align-items: center;
       max-width: 420px;
       width: 90vw;
+      position: relative;
       transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+    }
+
+    .wax-seal {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #e0517a, #a5123a 70%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4), inset 0 0 6px rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: #ffe3ea;
+      z-index: 15;
+      transform: rotate(12deg) scale(0);
     }
 
     .polaroid-wrapper.alive {
@@ -105,6 +135,7 @@
       overflow: hidden;
       background: #111111;
       border-radius: 3px;
+      box-shadow: inset 0 0 0 1px rgba(212, 175, 130, 0.5);
     }
 
     .photo-frame img {
@@ -126,6 +157,18 @@
       padding: 0 6px;
     }
 
+    .her-prelude {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 0.82rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #b08968;
+      opacity: 0;
+      transform: translateY(8px);
+      margin-bottom: 6px;
+    }
+
     .her-name {
       font-family: 'Caveat', cursive;
       font-size: 3.2rem;
@@ -135,6 +178,27 @@
       line-height: 1;
       margin-bottom: 10px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      background: linear-gradient(90deg, #111111 0%, #a5123a 45%, #111111 60%, #111111 100%);
+      background-size: 250% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmerName 5s linear infinite;
+    }
+
+    @keyframes shimmerName {
+      0% { background-position: 200% center; }
+      100% { background-position: -50% center; }
+    }
+
+    .her-signature {
+      display: block;
+      margin-top: 16px;
+      font-family: 'Caveat', cursive;
+      font-size: 1.5rem;
+      color: #a5123a;
+      opacity: 0;
+      transform: translateY(6px);
     }
 
     .her-caption {
@@ -245,15 +309,20 @@
   <div id="yt-player" style="position:absolute; width:0; height:0; overflow:hidden; opacity:0; pointer-events:none;"></div>
   <script src="https://www.youtube.com/iframe_api"></script>
 
+  <div class="vignette"></div>
+
   <div class="scene-container">
     <div class="polaroid-wrapper" id="polaroid">
+      <div class="wax-seal" id="waxSeal">♥</div>
       <div class="photo-frame">
         <img id="photo" src="photo.jpg" alt="Surprise Photo" />
       </div>
 
       <div class="caption-container">
+        <p class="her-prelude" id="herPrelude">a little something, just for you</p>
         <h1 class="her-name" id="herName">Jhansy ❤️</h1>
         <div class="her-caption" id="herCaption"></div>
+        <span class="her-signature" id="herSignature">— always, only you</span>
       </div>
     </div>
 
@@ -442,6 +511,7 @@
        BACKGROUND MUSIC — YouTube IFrame Player API
        ========================================================================== */
     const YT_VIDEO_ID = 'EsHmKenpE8U';
+    const YT_START_SECONDS = 201; // 3:21
     const muteBtn = document.getElementById('muteBtn');
     let ytPlayer = null;
     let ytReady = false;
@@ -460,13 +530,32 @@
           disablekb: 1,
           fs: 0,
           modestbranding: 1,
-          loop: 1,
-          playlist: YT_VIDEO_ID // required for loop:1 to work on a single video
+          start: YT_START_SECONDS
         },
         events: {
           onReady: () => {
             ytReady = true;
             if (wantsToStart) tryStartMusic();
+          },
+          onStateChange: (e) => {
+            // Manual loop: when the clip ends, jump back to the start
+            // point (3:21) instead of the very beginning of the video.
+            if (e.data === YT.PlayerState.ENDED) {
+              ytPlayer.seekTo(YT_START_SECONDS, true);
+              ytPlayer.playVideo();
+            }
+          },
+          onError: (e) => {
+            const meanings = {
+              2: 'Invalid video ID.',
+              5: 'Cannot be played in the HTML5 player.',
+              100: 'Video not found (removed or private).',
+              101: 'Owner has disabled embedding on other sites.',
+              150: 'Owner has disabled embedding on other sites.'
+            };
+            console.error('YouTube player error', e.data, meanings[e.data] || 'Unknown error');
+            muteBtn.textContent = '⚠ MUSIC UNAVAILABLE';
+            muteBtn.title = meanings[e.data] || 'Unknown playback error';
           }
         }
       });
@@ -551,21 +640,40 @@
         }
       });
 
-      tl.to('#herName', {
+      tl.to('#waxSeal', {
+        scale: 1,
+        duration: 0.6,
+        ease: 'back.out(3)',
+        delay: 0.6
+      })
+      .to('#herPrelude', {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power2.out'
+      })
+      .to('#herName', {
         opacity: 1,
         y: 0,
         duration: 1.2,
         ease: 'power2.out',
-        delay: 1.2
+        delay: 0.3
       })
       .add(() => {
         typeWriterEffect();
+      })
+      .to('#herSignature', {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power2.out',
+        delay: (TOTAL_TYPE_DURATION / 1000) + 0.3
       })
       .to('#replayBtn', {
         opacity: 1,
         pointerEvents: 'auto',
         duration: 0.8,
-        delay: (TOTAL_TYPE_DURATION / 1000) + 1
+        delay: 0.5
       });
     }
 
@@ -622,10 +730,14 @@
        ========================================================================== */
     document.getElementById('replayBtn').addEventListener('click', () => {
       gsap.set('#polaroid', { opacity: 0, y: -80, scale: 0.85 });
+      gsap.set('#waxSeal', { scale: 0 });
+      gsap.set('#herPrelude', { opacity: 0, y: 8 });
       gsap.set('#herName', { opacity: 0, y: 10 });
+      gsap.set('#herSignature', { opacity: 0, y: 6 });
       gsap.set('#replayBtn', { opacity: 0, pointerEvents: 'none' });
       document.getElementById('photo').classList.remove('developed');
       document.getElementById('herCaption').innerHTML = '';
+      document.getElementById('polaroid').classList.remove('alive');
 
       particles.forEach(p => p.reset());
 
