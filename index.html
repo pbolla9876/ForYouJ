@@ -7,7 +7,7 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Montserrat:wght@300;400;500&family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
@@ -23,7 +23,7 @@
       height: 100%;
       overflow: hidden;
       font-family: 'Montserrat', sans-serif;
-      background: radial-gradient(ellipse at center, #0a0b18 0%, #030308 100%);
+      background: radial-gradient(ellipse at center, #120d1c 0%, #05040a 100%);
       color: #ffffff;
       display: flex;
       justify-content: center;
@@ -59,22 +59,32 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 15px;
+      max-height: 100vh;
     }
 
     .polaroid-wrapper {
       opacity: 0;
-      transform: translateY(-80px) scale(0.9) rotate(-3deg);
-      background: #fdfdfd;
-      padding: 16px 16px 24px 16px;
-      border-radius: 4px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 255, 255, 0.1);
+      transform: translateY(-80px) scale(0.85) rotate(-3deg);
+      background: #ffffff;
+      padding: 18px 18px 24px 18px;
+      border-radius: 6px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 182, 193, 0.15);
       display: flex;
       flex-direction: column;
       align-items: center;
       max-width: 420px;
       width: 90vw;
-      transition: transform 0.3s ease;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+    }
+
+    .polaroid-wrapper.alive {
+      animation: heartPulse 4s infinite ease-in-out;
+    }
+
+    @keyframes heartPulse {
+      0%, 100% { box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 182, 193, 0.2); }
+      50% { box-shadow: 0 25px 55px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 105, 180, 0.4); }
     }
 
     .polaroid-wrapper:hover {
@@ -86,16 +96,16 @@
       width: 100%;
       aspect-ratio: 4 / 5;
       overflow: hidden;
-      background: #e0e0e0;
-      border-radius: 2px;
+      background: #111111;
+      border-radius: 3px;
     }
 
     .photo-frame img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: blur(20px) grayscale(100%) brightness(1.8) opacity(0.2);
-      transition: filter 3s ease-out;
+      filter: blur(25px) grayscale(100%) brightness(1.8) opacity(0.1);
+      transition: filter 3.5s ease-out;
     }
 
     .photo-frame img.developed {
@@ -106,65 +116,106 @@
       margin-top: 18px;
       text-align: center;
       width: 100%;
-      padding: 0 5px;
+      padding: 0 6px;
     }
 
     .her-name {
       font-family: 'Caveat', cursive;
-      font-size: 2.8rem;
-      color: #1a1a1a;
+      font-size: 3.2rem;
+      color: #111111;
       opacity: 0;
       transform: translateY(10px);
-      line-height: 1.1;
-      margin-bottom: 8px;
+      line-height: 1;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     .her-caption {
-      font-size: 0.88rem;
-      color: #444444;
+      font-size: 0.86rem;
+      color: #2c2c2c;
       font-weight: 400;
-      line-height: 1.5;
-      letter-spacing: 0.2px;
-      opacity: 0;
-      transform: translateY(10px);
+      line-height: 1.55;
+      letter-spacing: 0.1px;
+      min-height: 160px;
     }
 
-    .her-caption span.telugu-line {
-      display: block;
+    .telugu-line {
       font-style: italic;
-      color: #666666;
+      color: #d81b60;
+      font-weight: 500;
+      display: block;
       margin: 4px 0;
+      font-family: 'Playfair Display', serif;
     }
 
-    .replay-btn {
+    .highlight-nickname {
+      color: #b71c1c;
+      font-weight: 600;
+    }
+
+    .cursor-blink {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background-color: #d81b60;
+      margin-left: 2px;
+      animation: blink 0.8s infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .controls-bar {
       position: absolute;
-      bottom: 30px;
+      bottom: 25px;
       z-index: 20;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      gap: 12px;
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       color: #ffffff;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      letter-spacing: 1px;
+      padding: 9px 20px;
+      border-radius: 25px;
+      font-size: 0.8rem;
+      letter-spacing: 1.2px;
       cursor: pointer;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(8px);
       opacity: 0;
       pointer-events: none;
       transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .replay-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
-      transform: scale(1.05);
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
     }
 
     .floating-heart {
       position: absolute;
-      color: rgba(255, 182, 193, 0.6);
-      font-size: 1.2rem;
+      color: rgba(255, 105, 180, 0.7);
+      font-size: 1.3rem;
       pointer-events: none;
       z-index: 12;
+      user-select: none;
+    }
+
+    .mouse-sparkle {
+      position: absolute;
+      pointer-events: none;
+      z-index: 99;
+      color: #ff69b4;
+      font-size: 1rem;
+      user-select: none;
     }
   </style>
 </head>
@@ -181,21 +232,19 @@
 
       <div class="caption-container">
         <h1 class="her-name" id="herName">Jhansy ❤️</h1>
-        <div class="her-caption" id="herCaption">
-          <p><span class="telugu-line">"Naa silent world-lo, nee chinnari navve oka madhura kavitha."</span></p>
-          <p>The stars must be jealous, because you outshine them without even trying.</p>
-          <p><span class="telugu-line">"Kanti reppala venuka unna swapnam nuvvu, naa gundela chaatu unna kavanam nuvvu."</span></p>
-          <p>Whenever I think about where I belong, I realize that my favorite place in the world isn't a destination—it's next to you.</p>
-          <p style="margin-top: 6px;">You might be my absolute <strong>Psycho</strong>, but you’re also my <strong>Jaanu</strong>.</p>
-          <p style="margin-top: 4px; font-weight: 500;">I loved you yesterday, I love you still, I always have, I always will.</p>
-        </div>
+        <div class="her-caption" id="herCaption"></div>
       </div>
     </div>
   </div>
 
-  <button class="replay-btn" id="replayBtn">REPLAY</button>
+  <div class="controls-bar">
+    <button class="action-btn" id="replayBtn">✨ REPLAY MOMENT</button>
+  </div>
 
   <script>
+    /* ==========================================================================
+       CANVAS STARFIELD & SHARD ANIMATION SYSTEM
+       ========================================================================== */
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
@@ -207,7 +256,7 @@
       height = canvas.height = window.innerHeight;
     });
 
-    const STAR_COUNT = 200;
+    const STAR_COUNT = 220;
     let particles = [];
     let phase = 1;
 
@@ -222,14 +271,14 @@
         this.size = Math.random() * 2 + 1;
         this.alpha = Math.random() * 0.8 + 0.2;
         this.pulseSpeed = Math.random() * 0.02 + 0.005;
-        this.dx = (Math.random() - 0.5) * 0.3;
-        this.dy = (Math.random() - 0.5) * 0.3;
+        this.dx = (Math.random() - 0.5) * 0.35;
+        this.dy = (Math.random() - 0.5) * 0.35;
 
         this.targetX = width / 2;
         this.targetY = height / 2;
         this.isShard = false;
         this.angle = Math.random() * Math.PI * 2;
-        this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.12;
       }
 
       update() {
@@ -246,10 +295,10 @@
         } else if (phase === 2) {
           const dx = this.targetX - this.x;
           const dy = this.targetY - this.y;
-          this.x += dx * 0.08;
-          this.y += dy * 0.08;
+          this.x += dx * 0.085;
+          this.y += dy * 0.085;
           this.angle += this.rotationSpeed;
-          this.alpha = Math.min(this.alpha + 0.02, 0.9);
+          this.alpha = Math.min(this.alpha + 0.02, 0.95);
         }
       }
 
@@ -260,9 +309,9 @@
         if (phase === 1 || !this.isShard) {
           ctx.beginPath();
           ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(220, 235, 255, ${Math.max(0, this.alpha)})`;
-          ctx.shadowBlur = 8;
-          ctx.shadowColor = 'rgba(180, 215, 255, 0.8)';
+          ctx.fillStyle = `rgba(235, 210, 255, ${Math.max(0, this.alpha)})`;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = 'rgba(255, 182, 193, 0.8)';
           ctx.fill();
         } else {
           ctx.rotate(this.angle);
@@ -271,8 +320,8 @@
           ctx.lineTo(this.size * 2, this.size * 2);
           ctx.lineTo(-this.size * 2, this.size * 1.5);
           ctx.closePath();
-          ctx.fillStyle = `rgba(230, 245, 255, ${this.alpha})`;
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.fillStyle = `rgba(255, 220, 240, ${this.alpha})`;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
           ctx.lineWidth = 1;
           ctx.stroke();
           ctx.fill();
@@ -300,13 +349,78 @@
     }
     render();
 
+    /* ==========================================================================
+       TYPEWRITER TEXT REVEAL ENGINE
+       ========================================================================== */
+    const textLines = [
+      { text: '"Naa silent world-lo, nee chinnari navve oka madhura kavitha."', class: 'telugu-line' },
+      { text: 'The stars must be jealous, because you outshine them without even trying.', class: '' },
+      { text: '"Kanti reppala venuka unna swapnam nuvvu, naa gundela chaatu unna kavanam nuvvu."', class: 'telugu-line' },
+      { text: "Whenever I think about where I belong, I realize that my favorite place in the world isn't a destination—it's next to you.", class: '' },
+      { text: 'You might be my absolute Psycho, but you’re also my Jaanu.', class: 'custom-nicknames' },
+      { text: 'I loved you yesterday, I love you still, I always have, I always will. ❤️', class: 'final-love' }
+    ];
+
+    async function typeWriterEffect() {
+      const captionDiv = document.getElementById('herCaption');
+      captionDiv.innerHTML = '<span id="activeText"></span><span class="cursor-blink"></span>';
+      
+      const activeTextSpan = document.getElementById('activeText');
+
+      for (let i = 0; i < textLines.length; i++) {
+        const line = textLines[i];
+        const lineElem = document.createElement('p');
+        
+        if (line.class === 'telugu-line') {
+          lineElem.classList.add('telugu-line');
+        } else if (line.class === 'final-love') {
+          lineElem.style.fontWeight = '600';
+          lineElem.style.marginTop = '6px';
+          lineElem.style.color = '#111';
+        } else if (line.class === 'custom-nicknames') {
+          lineElem.style.marginTop = '5px';
+        }
+
+        captionDiv.insertBefore(lineElem, document.querySelector('.cursor-blink'));
+
+        // Format nicknames specially
+        let fullText = line.text;
+        
+        for (let j = 0; j <= fullText.length; j++) {
+          let currentSubstring = fullText.substring(0, j);
+
+          if (line.class === 'custom-nicknames') {
+            currentSubstring = currentSubstring
+              .replace('Psycho', '<span class="highlight-nickname">Psycho</span>')
+              .replace('Jaanu', '<span class="highlight-nickname">Jaanu</span>');
+          }
+
+          lineElem.innerHTML = currentSubstring;
+          await new Promise(r => setTimeout(r, 28)); // Typing speed
+        }
+
+        await new Promise(r => setTimeout(r, 220)); // Pause between lines
+      }
+
+      // Remove typing cursor when finished
+      const cursor = document.querySelector('.cursor-blink');
+      if (cursor) cursor.remove();
+
+      // Turn on alive heartbeat animation
+      document.getElementById('polaroid').classList.add('alive');
+    }
+
+    /* ==========================================================================
+       MAIN REVEAL SEQUENCE (GSAP TIMELINE)
+       ========================================================================== */
     const tl = gsap.timeline();
 
     function startSequence() {
       phase = 1;
+      document.getElementById('polaroid').classList.remove('alive');
 
       tl.to({}, {
-        duration: 2.5,
+        duration: 2.2,
         onComplete: () => {
           phase = 2;
           particles.forEach((p) => {
@@ -317,24 +431,24 @@
       });
 
       tl.to({}, {
-        duration: 2.5,
+        duration: 2.2,
         onComplete: () => {
           phase = 3;
 
-          gsap.to('#flash', { opacity: 0.8, duration: 0.1, yoyo: true, repeat: 1 });
+          gsap.to('#flash', { opacity: 0.85, duration: 0.12, yoyo: true, repeat: 1 });
 
           gsap.to('#polaroid', {
             opacity: 1,
             y: 0,
             scale: 1,
             duration: 1.2,
-            ease: 'back.out(1.4)'
+            ease: 'back.out(1.3)'
           });
         }
       });
 
       tl.to({}, {
-        duration: 1.2,
+        duration: 1.0,
         onComplete: () => {
           document.getElementById('photo').classList.add('developed');
         }
@@ -345,29 +459,27 @@
         y: 0,
         duration: 1.2,
         ease: 'power2.out',
-        delay: 1.5
+        delay: 1.2
       })
-      .to('#herCaption', {
-        opacity: 1,
-        y: 0,
-        duration: 1,
-        ease: 'power2.out'
-      }, '-=0.4')
+      .add(() => {
+        typeWriterEffect();
+      })
       .to('#replayBtn', {
         opacity: 1,
         pointerEvents: 'auto',
-        duration: 0.8
-      })
-      .add(() => {
-        spawnHeartsLoop();
+        duration: 0.8,
+        delay: 6
       });
     }
 
+    /* ==========================================================================
+       INTERACTIVE AMBIENT HEARTS & MOUSE SPARKLES
+       ========================================================================== */
     function spawnHeartsLoop() {
       setInterval(() => {
         const heart = document.createElement('div');
         heart.classList.add('floating-heart');
-        heart.innerHTML = '♥';
+        heart.innerHTML = Math.random() > 0.5 ? '♥' : '💕';
         
         const rect = document.getElementById('polaroid').getBoundingClientRect();
         heart.style.left = `${rect.left + Math.random() * rect.width}px`;
@@ -376,21 +488,47 @@
         document.body.appendChild(heart);
 
         gsap.to(heart, {
-          y: -100 - Math.random() * 50,
-          x: (Math.random() - 0.5) * 40,
+          y: -120 - Math.random() * 60,
+          x: (Math.random() - 0.5) * 50,
           opacity: 0,
           duration: 3 + Math.random() * 2,
           ease: 'power1.out',
           onComplete: () => heart.remove()
         });
-      }, 1200);
+      }, 1000);
     }
+    spawnHeartsLoop();
 
+    // Mouse / Touch Sparkle Burst
+    window.addEventListener('mousemove', (e) => {
+      if (Math.random() > 0.75) {
+        const sparkle = document.createElement('div');
+        sparkle.classList.add('mouse-sparkle');
+        sparkle.innerHTML = Math.random() > 0.5 ? '✨' : '🌸';
+        sparkle.style.left = `${e.clientX}px`;
+        sparkle.style.top = `${e.clientY}px`;
+        document.body.appendChild(sparkle);
+
+        gsap.to(sparkle, {
+          y: e.clientY - 40 - Math.random() * 20,
+          opacity: 0,
+          scale: 1.4,
+          duration: 1.2,
+          ease: 'power1.out',
+          onComplete: () => sparkle.remove()
+        });
+      }
+    });
+
+    /* ==========================================================================
+       REPLAY & INITIALIZATION
+       ========================================================================== */
     document.getElementById('replayBtn').addEventListener('click', () => {
-      gsap.set('#polaroid', { opacity: 0, y: -80, scale: 0.9 });
-      gsap.set('#herName, #herCaption', { opacity: 0, y: 10 });
+      gsap.set('#polaroid', { opacity: 0, y: -80, scale: 0.85 });
+      gsap.set('#herName', { opacity: 0, y: 10 });
       gsap.set('#replayBtn', { opacity: 0, pointerEvents: 'none' });
       document.getElementById('photo').classList.remove('developed');
+      document.getElementById('herCaption').innerHTML = '';
 
       particles.forEach(p => p.reset());
 
