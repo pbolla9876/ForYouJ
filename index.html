@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>A Moment For You</title>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Montserrat:wght@300;400;500&family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
@@ -18,20 +18,26 @@
       padding: 0;
     }
 
-    body, html {
+    html, body {
       width: 100%;
-      height: 100%;
-      overflow: hidden;
+      min-height: 100%;
+      /* was: overflow: hidden -> this is what let the fixed replay button
+         sit on top of caption text that ran past the viewport height */
+      overflow-x: hidden;
+      overflow-y: auto;
       font-family: 'Montserrat', sans-serif;
       background: radial-gradient(ellipse at center, #120d1c 0%, #05040a 100%);
       color: #ffffff;
+    }
+
+    body {
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
     }
 
     #canvas {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
@@ -41,7 +47,7 @@
     }
 
     #flash {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
@@ -59,8 +65,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 15px;
-      max-height: 100vh;
+      min-height: 100vh;
+      width: 100%;
+      padding: 40px 15px;
     }
 
     .polaroid-wrapper {
@@ -168,9 +175,11 @@
       50% { opacity: 0; }
     }
 
+    /* Controls now live BELOW the polaroid in normal document flow,
+       so they can never overlap the caption text again. */
     .controls-bar {
-      position: absolute;
-      bottom: 25px;
+      position: static;
+      margin-top: 30px;
       z-index: 20;
       display: flex;
       gap: 12px;
@@ -224,6 +233,18 @@
   <canvas id="canvas"></canvas>
   <div id="flash"></div>
 
+  <!--
+    AUDIO: plays the YouTube video (EsHmKenpE8U) as background music using
+    YouTube's official IFrame Player API. It's rendered at 0x0 size and
+    hidden from view — only the audio plays. Browsers block audio from
+    auto-playing before the user has interacted with the page, so
+    playback also kicks off on the first click/tap as a fallback (see
+    JS below). Note: this only works if the video's owner has allowed
+    embedding; if it's blocked, playback will silently fail.
+  -->
+  <div id="yt-player" style="position:absolute; width:0; height:0; overflow:hidden; opacity:0; pointer-events:none;"></div>
+  <script src="https://www.youtube.com/iframe_api"></script>
+
   <div class="scene-container">
     <div class="polaroid-wrapper" id="polaroid">
       <div class="photo-frame">
@@ -235,10 +256,11 @@
         <div class="her-caption" id="herCaption"></div>
       </div>
     </div>
-  </div>
 
-  <div class="controls-bar">
-    <button class="action-btn" id="replayBtn">✨ REPLAY MOMENT</button>
+    <div class="controls-bar">
+      <button class="action-btn" id="replayBtn">✨ REPLAY MOMENT</button>
+      <button class="action-btn" id="muteBtn" style="opacity:1;pointer-events:auto;">🔊 MUSIC</button>
+    </div>
   </div>
 
   <script>
@@ -351,26 +373,35 @@
 
     /* ==========================================================================
        TYPEWRITER TEXT REVEAL ENGINE
+       Total reveal time is targeted at ~30 seconds (TOTAL_TYPE_DURATION).
+       Per-character typing speed is calculated automatically from the
+       combined length of every line, so if you edit the lines below the
+       pacing still stretches/compresses to land on ~30s.
        ========================================================================== */
     const textLines = [
-      { text: '"Naa silent world-lo, nee chinnari navve oka madhura kavitha."', class: 'telugu-line' },
+      { text: 'Every quiet moment feels a little more like poetry with you in it.', class: 'telugu-line' },
       { text: 'The stars must be jealous, because you outshine them without even trying.', class: '' },
-      { text: '"Kanti reppala venuka unna swapnam nuvvu, naa gundela chaatu unna kavanam nuvvu."', class: 'telugu-line' },
+      { text: 'You live behind my eyes and in every line I write, without even trying.', class: 'telugu-line' },
       { text: "Whenever I think about where I belong, I realize that my favorite place in the world isn't a destination—it's next to you.", class: '' },
       { text: 'You might be my absolute Psycho, but you’re also my Jaanu.', class: 'custom-nicknames' },
       { text: 'I loved you yesterday, I love you still, I always have, I always will. ❤️', class: 'final-love' }
     ];
 
+    const TOTAL_TYPE_DURATION = 30000; // ~30 seconds for the full reveal
+    const PAUSE_BETWEEN_LINES = 450;   // ms pause after each line finishes
+
     async function typeWriterEffect() {
       const captionDiv = document.getElementById('herCaption');
       captionDiv.innerHTML = '<span id="activeText"></span><span class="cursor-blink"></span>';
-      
-      const activeTextSpan = document.getElementById('activeText');
+
+      const totalChars = textLines.reduce((sum, l) => sum + l.text.length, 0);
+      const totalPauseTime = PAUSE_BETWEEN_LINES * (textLines.length - 1);
+      const charDelay = Math.max(18, (TOTAL_TYPE_DURATION - totalPauseTime) / totalChars);
 
       for (let i = 0; i < textLines.length; i++) {
         const line = textLines[i];
         const lineElem = document.createElement('p');
-        
+
         if (line.class === 'telugu-line') {
           lineElem.classList.add('telugu-line');
         } else if (line.class === 'final-love') {
@@ -383,9 +414,8 @@
 
         captionDiv.insertBefore(lineElem, document.querySelector('.cursor-blink'));
 
-        // Format nicknames specially
         let fullText = line.text;
-        
+
         for (let j = 0; j <= fullText.length; j++) {
           let currentSubstring = fullText.substring(0, j);
 
@@ -396,19 +426,84 @@
           }
 
           lineElem.innerHTML = currentSubstring;
-          await new Promise(r => setTimeout(r, 28)); // Typing speed
+          await new Promise(r => setTimeout(r, charDelay));
         }
 
-        await new Promise(r => setTimeout(r, 220)); // Pause between lines
+        await new Promise(r => setTimeout(r, PAUSE_BETWEEN_LINES));
       }
 
-      // Remove typing cursor when finished
       const cursor = document.querySelector('.cursor-blink');
       if (cursor) cursor.remove();
 
-      // Turn on alive heartbeat animation
       document.getElementById('polaroid').classList.add('alive');
     }
+
+    /* ==========================================================================
+       BACKGROUND MUSIC — YouTube IFrame Player API
+       ========================================================================== */
+    const YT_VIDEO_ID = 'EsHmKenpE8U';
+    const muteBtn = document.getElementById('muteBtn');
+    let ytPlayer = null;
+    let ytReady = false;
+    let musicStarted = false;
+    let wantsToStart = false;
+
+    // Called automatically by the YouTube IFrame API script once it loads
+    window.onYouTubeIframeAPIReady = function () {
+      ytPlayer = new YT.Player('yt-player', {
+        height: '0',
+        width: '0',
+        videoId: YT_VIDEO_ID,
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          modestbranding: 1,
+          loop: 1,
+          playlist: YT_VIDEO_ID // required for loop:1 to work on a single video
+        },
+        events: {
+          onReady: () => {
+            ytReady = true;
+            if (wantsToStart) tryStartMusic();
+          }
+        }
+      });
+    };
+
+    function tryStartMusic() {
+      wantsToStart = true;
+      if (musicStarted || !ytReady || !ytPlayer) return;
+      musicStarted = true;
+      ytPlayer.setVolume(0);
+      ytPlayer.playVideo();
+
+      const vol = { v: 0 };
+      gsap.to(vol, {
+        v: 70,
+        duration: 2.5,
+        onUpdate: () => ytPlayer.setVolume(Math.round(vol.v))
+      });
+    }
+
+    // Fallback: start music on the very first user interaction if autoplay was blocked
+    ['click', 'touchstart', 'keydown'].forEach(evt => {
+      window.addEventListener(evt, () => {
+        if (!musicStarted) tryStartMusic();
+      }, { once: true });
+    });
+
+    muteBtn.addEventListener('click', () => {
+      if (!ytPlayer || typeof ytPlayer.isMuted !== 'function') return;
+      if (ytPlayer.isMuted()) {
+        ytPlayer.unMute();
+        muteBtn.textContent = '🔊 MUSIC';
+      } else {
+        ytPlayer.mute();
+        muteBtn.textContent = '🔇 MUSIC';
+      }
+    });
 
     /* ==========================================================================
        MAIN REVEAL SEQUENCE (GSAP TIMELINE)
@@ -444,6 +539,8 @@
             duration: 1.2,
             ease: 'back.out(1.3)'
           });
+
+          tryStartMusic();
         }
       });
 
@@ -468,7 +565,7 @@
         opacity: 1,
         pointerEvents: 'auto',
         duration: 0.8,
-        delay: 6
+        delay: (TOTAL_TYPE_DURATION / 1000) + 1
       });
     }
 
@@ -480,11 +577,11 @@
         const heart = document.createElement('div');
         heart.classList.add('floating-heart');
         heart.innerHTML = Math.random() > 0.5 ? '♥' : '💕';
-        
+
         const rect = document.getElementById('polaroid').getBoundingClientRect();
         heart.style.left = `${rect.left + Math.random() * rect.width}px`;
         heart.style.top = `${rect.bottom - 20}px`;
-        
+
         document.body.appendChild(heart);
 
         gsap.to(heart, {
